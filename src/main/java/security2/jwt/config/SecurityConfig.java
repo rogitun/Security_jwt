@@ -12,11 +12,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import security2.jwt.jjwt.JwtAuthenticationFilter;
+import security2.jwt.jjwt.JwtAuthorizationFilter;
+import security2.jwt.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final UserRepository userRepository;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
@@ -32,6 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().disable() //폼 로그인 안한다.
                 .httpBasic().disable()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager())) //authenticationManager가 파라미터로 필요함
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(),userRepository))
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/**")
                 .access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
